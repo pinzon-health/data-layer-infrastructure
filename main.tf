@@ -117,6 +117,7 @@ resource "aws_instance" "bastion" {
 
   vpc_security_group_ids = [
     aws_security_group.bastion.id,
+    aws_security_group.aurora.id
   ]
 
   tags = {
@@ -137,3 +138,93 @@ resource "aws_eip_association" "bastion" {
   allocation_id = aws_eip.bastion.id
 }
 ########## end of bastion host ##########
+
+########## Aurora ##########
+resource "aws_security_group" "aurora" {
+  name        = "${local.resource_prefix}-aurora"
+  description = "Allow connections to Aurora"
+  vpc_id      = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.resource_prefix}-aurora"
+  }
+}
+resource "aws_subnet" "private" {
+  count = length(local.availability_zones)
+
+  cidr_block = "10.0.${count.index + 101}.0/24"
+  vpc_id     = aws_vpc.main.id
+
+  availability_zone = local.availability_zones[count.index]
+
+  tags = {
+    Name = "${local.resource_prefix}-private-subnet-${count.index + 1}"
+  }
+}
+resource "aws_db_subnet_group" "subnet_group" {
+  name       = "${local.resource_prefix}-subnet-group"
+  subnet_ids = aws_subnet.private.*.id
+
+  tags = {
+    Name = "${local.resource_prefix}-subnet-group"
+  }
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.resource_prefix}-private-rt"
+  }
+}
+resource "aws_route_table_association" "private_subnet_association" {
+  count          = length(local.availability_zones)
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private.id
+}
+#### end private subnet
+resource "aws_rds_cluster" "aurora" {
+  engine         = "aurora-postgresql"
+  engine_version = "14.6"
+  engine_mode    = "provisioned"
+
+  cluster_identifier        = "${local.resource_prefix}-aurora"
+  database_name             = "vitalparams"
+  master_password           = var.db_password
+  final_snapshot_identifier = "${local.resource_prefix}-aurora-delete-me"
+
+  storage_encrypted      = true
+  master_username        = var.master_username
+  vpc_security_group_ids = [aws_security_group.aurora.id]
+
+  db_subnet_group_name = aws_db_subnet_group.subnet_group.name
+
+  serverlessv2_scaling_configuration {
+    min_capacity = var.min_capacity
+    max_capacity = var.max_capacity
+  }
+
+  preferred_maintenance_window = "Tue:03:00-Tue:04:00"
+  preferred_backup_window      = "02:00-03:00"
+  backup_retention_period      = 7
+
+  tags = {
+    Name = "${local.resource_prefix}-aurora"
+  }
+}
+
+resource "aws_rds_cluster_instance" "cluster_instances" {
+  cluster_identifier = aws_rds_cluster.aurora.id
+  instance_class     = "db.serverless"
+  engine             = aws_rds_cluster.aurora.engine
+  engine_version     = aws_rds_cluster.aurora.engine_version
+}
+resource "aws_security_group_rule" "aurora_inbound_from_bastion" {
+  security_group_id = aws_security_group.aurora.id
+
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.bastion.id
+}
