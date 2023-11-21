@@ -38,6 +38,9 @@ Create the following files and directories:
 3. **Check the outputs:**
 
     If you've created an `outputs.tf` file, you should see the output values after the `terraform apply` command finishes. You can also run `terraform output` at any time to view the output values.
+    ```hcl
+    $ terraform output > outputs.txt
+    ```
 
 4. **Destroy the resources (optional):**
 

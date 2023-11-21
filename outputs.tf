@@ -22,3 +22,15 @@ output "aurora_reader_endpoint" {
 output "aurora_database_name" {
   value = aws_rds_cluster.aurora.database_name
 }
+
+output "vpc_id" {
+  value = aws_vpc.main.id
+}
+
+output "lambda_subnet_ids" {
+  value = aws_subnet.private.*.id
+}
+
+output "lambda_security_group_id" {
+  value = aws_security_group.lambda.id
+}

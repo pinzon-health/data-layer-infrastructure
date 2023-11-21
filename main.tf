@@ -228,3 +228,32 @@ resource "aws_security_group_rule" "aurora_inbound_from_bastion" {
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.bastion.id
 }
+
+########## Security group rule for Lambda ##########
+resource "aws_security_group" "lambda" {
+  name        = "${local.resource_prefix}-lambda"
+  description = "Security group for Lambda functions"
+  vpc_id      = aws_vpc.main.id
+
+  egress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.aurora.id]
+  }
+
+  tags = {
+    Name = "${local.resource_prefix}-lambda"
+  }
+}
+resource "aws_security_group_rule" "aurora_inbound_from_lambda" {
+  security_group_id        = aws_security_group.aurora.id
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.lambda.id
+
+  description = "Allow inbound traffic from Lambda on port 5432"
+}
+########## end of Security group rule for Lambda ##########
