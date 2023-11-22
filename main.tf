@@ -126,7 +126,7 @@ resource "aws_instance" "bastion" {
 }
 # Create an Elastic IP address and associate it with the instance
 resource "aws_eip" "bastion" {
-  vpc = true
+  domain = "vpc"
 
   tags = {
     Name = "${local.resource_prefix}-bastion-eip"
