@@ -25,8 +25,12 @@ Create the following files and directories:
    ```bash
    $ terraform init
    ```
-
-2. **Apply the Terraform configuration:**
+2. **Add a Workspaces:**
+   ```bash
+   $ terraform workspace new staging   
+   $ terraform workspace select staging   
+   ```
+3. **Apply the Terraform configuration:**
 
     Run the following command to create the resources:
    ```hcl
@@ -35,14 +39,14 @@ Create the following files and directories:
    $ terraform apply -var-file="vars/dev.tfvars"
    ```
    Review the proposed changes and type `yes` when prompted to proceed.
-3. **Check the outputs:**
+4. **Check the outputs:**
 
     If you've created an `outputs.tf` file, you should see the output values after the `terraform apply` command finishes. You can also run `terraform output` at any time to view the output values.
     ```hcl
     $ terraform output > outputs.txt
     ```
 
-4. **Destroy the resources (optional):**
+5. **Destroy the resources (optional):**
 
     If you want to delete the resources created by Terraform, run:
 
