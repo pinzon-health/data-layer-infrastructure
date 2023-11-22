@@ -38,3 +38,5 @@ vars/*.tfvars
 !vars/dev.tfvars
 !vars/dev.tfvars.example
 *.pem
+
+outputs-staging.txt
