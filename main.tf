@@ -169,9 +169,13 @@ resource "aws_db_subnet_group" "subnet_group" {
     Name = "${local.resource_prefix}-subnet-group"
   }
 }
-
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.id
+  }
 
   tags = {
     Name = "${local.resource_prefix}-private-rt"
@@ -241,6 +245,18 @@ resource "aws_security_group" "lambda" {
     protocol        = "tcp"
     security_groups = [aws_security_group.aurora.id]
   }
+  egress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   tags = {
     Name = "${local.resource_prefix}-lambda"
@@ -257,3 +273,29 @@ resource "aws_security_group_rule" "aurora_inbound_from_lambda" {
   description = "Allow inbound traffic from Lambda on port 5432"
 }
 ########## end of Security group rule for Lambda ##########
+
+########## Internet access for Lambda (NAT) ##########
+# Elastic IP for NAT Gateway
+# Allocate an Elastic IP for the NAT Gateway
+resource "aws_eip" "nat" {
+  domain = "vpc"
+
+  tags = {
+    Name = "${local.resource_prefix}-nat-eip"
+  }
+}
+
+# # Create a NAT Gateway in the public subnet
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = tolist(aws_subnet.public.*.id)[0] # Using the first public subnet
+
+  tags = {
+    Name = "${local.resource_prefix}-nat-gateway"
+  }
+}
+
+# Update the route table for private subnets to route internet-bound traffic through the NAT Gateway
+# Please find under resource "aws_route_table" "private" 
+
+########## end of Internet access for Lambda (NAT) ##########
