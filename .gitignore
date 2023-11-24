@@ -40,3 +40,5 @@ vars/*.tfvars
 *.pem
 
 outputs-staging.txt
+
+outputs-production.txt
