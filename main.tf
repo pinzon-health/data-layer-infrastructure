@@ -189,7 +189,7 @@ resource "aws_route_table_association" "private_subnet_association" {
 #### end private subnet
 resource "aws_rds_cluster" "aurora" {
   engine         = "aurora-postgresql"
-  engine_version = "14.6"
+  engine_version = "14.9"
   engine_mode    = "provisioned"
 
   cluster_identifier        = "${local.resource_prefix}-aurora"
