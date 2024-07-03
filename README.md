@@ -104,3 +104,28 @@ There are several ways to pass different values for variables when running Terra
    This will set the environment variable based on the values in the stage.tfvars file. You can create multiple variable files for different environments and pass the appropriate file when running Terraform.
 
 Choose any of the above methods that best suit your workflow and project requirements.
+
+## terraform_run.sh
+The terraform_run.sh script is designed to manage Terraform deployments for different environments (staging and production). It simplifies the process of planning and applying Terraform configurations by providing a streamlined command-line interface.
+
+### Usage
+To use the script, you need to provide two arguments: the environment and the action. The script will validate the inputs and execute the corresponding Terraform commands.
+```hcl
+./terraform_run.sh <environment> <action>
+```
+
+Arguments
+* `<environment>`: The target environment for the Terraform commands. Acceptable values are staging or production.
+* `<action>`: The action to be performed by Terraform. Acceptable values are plan or apply.
+
+#### Example
+```hcl
+./terraform_run.sh staging plan
+```
+
+### Preconditions
+Ensure that you have the following preconditions met before running the script:
+
+* Terraform is installed and accessible in your environment.
+* The necessary Terraform configuration files are present in the working directory.
+* A vars directory exists with corresponding variable files (staging.tfvars and production.tfvars) for each environment.

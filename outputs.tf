@@ -30,3 +30,7 @@ output "lambda_subnet_ids" {
 output "lambda_security_group_id" {
   value = aws_security_group.lambda.id
 }
+output "rds_instance_ca_cert_identifier" {
+  description = "The CA certificate identifier for the RDS instances"
+  value       = aws_rds_cluster_instance.cluster_instances.ca_cert_identifier
+}

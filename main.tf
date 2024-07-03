@@ -222,6 +222,8 @@ resource "aws_rds_cluster_instance" "cluster_instances" {
   instance_class     = "db.serverless"
   engine             = aws_rds_cluster.aurora.engine
   engine_version     = aws_rds_cluster.aurora.engine_version
+  # new ca cert identifier for EU-CENTRAL-1 region
+  ca_cert_identifier = "rds-ca-rsa2048-g1"
 }
 resource "aws_security_group_rule" "aurora_inbound_from_bastion" {
   security_group_id = aws_security_group.aurora.id
